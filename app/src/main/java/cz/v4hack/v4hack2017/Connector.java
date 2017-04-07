@@ -2,10 +2,12 @@ package cz.v4hack.v4hack2017;
 
 import android.location.Location;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public final class Connector {
 
@@ -20,45 +22,39 @@ public final class Connector {
                                 .put("type", "tram")
                                 .put("in", new JSONObject()
                                         .put("dest", "FirstEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                         )
                         .put("88", new JSONObject()
                                 .put("type", "bus")
                                 .put("in", new JSONObject()
                                         .put("dest", "FirstEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                         )
                         .put("25", new JSONObject()
                                 .put("type", "trolley")
                                 .put("in", new JSONObject()
                                         .put("dest", "FirstEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
-                                        .put("connections", new long[]{
-                                                System.currentTimeMillis()
-                                        })
+                                        .put("connections", new JSONArray(Collections
+                                                .singletonList(System.currentTimeMillis())))
                                 )
                         )
                 );
