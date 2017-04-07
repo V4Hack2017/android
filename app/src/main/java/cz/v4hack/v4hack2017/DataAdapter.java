@@ -1,5 +1,7 @@
 package cz.v4hack.v4hack2017;
 
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,13 +36,20 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.Holder> {
     @Override
     public void onBindViewHolder(Holder holder, int position) {
         try {
-            JSONObject object = arrayList.get(position);
+            final JSONObject object = arrayList.get(position);
+            final String type = object.getString("type");
+
             holder.number.setText(object.getString("line"));
             holder.name1.setText(object.getJSONObject("in").getString("dest"));
             holder.name2.setText(object.getJSONObject("out").getString("dest"));
-            long time1 = object.getJSONObject("in").getJSONArray("connections").getLong(0);
-            long time2 = object.getJSONObject("out").getJSONArray("connections").getLong(0);
+
+            final long time1 = object.getJSONObject("in").getJSONArray("connections").getLong(0);
+            final long time2 = object.getJSONObject("out").getJSONArray("connections").getLong(0);
+            final int drawable = "tram".equals(type) ? R.drawable.ic_tram_black_24dp
+                            : R.drawable.ic_directions_bus_black_24dp;
+            holder.time1.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
             holder.time1.setText(format.format(new Date(time1)));
+            holder.time2.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
             holder.time2.setText(format.format(new Date(time2)));
         } catch (JSONException e) {
             e.printStackTrace();
