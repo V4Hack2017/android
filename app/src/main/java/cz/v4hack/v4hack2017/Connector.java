@@ -25,7 +25,7 @@ public final class Connector {
                                         })
                                 )
                                 .put("out", new JSONObject()
-                                        .put("dest", "FirstEndStation")
+                                        .put("dest", "SecondEndStation")
                                         .put("connections", new long[]{
                                                 System.currentTimeMillis()
                                         })
@@ -40,7 +40,7 @@ public final class Connector {
                                         })
                                 )
                                 .put("out", new JSONObject()
-                                        .put("dest", "FirstEndStation")
+                                        .put("dest", "SecondEndStation")
                                         .put("connections", new long[]{
                                                 System.currentTimeMillis()
                                         })
@@ -55,7 +55,7 @@ public final class Connector {
                                         })
                                 )
                                 .put("out", new JSONObject()
-                                        .put("dest", "FirstEndStation")
+                                        .put("dest", "SecondEndStation")
                                         .put("connections", new long[]{
                                                 System.currentTimeMillis()
                                         })
