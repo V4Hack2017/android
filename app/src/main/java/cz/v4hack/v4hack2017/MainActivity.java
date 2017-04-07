@@ -90,6 +90,13 @@ public class MainActivity extends AppCompatActivity {
             NotificationService.reload(this);
             if (Utils.hasAnyLocationPermission(this)) {
                 requestLocation();
+            } else {
+                setTitle(R.string.app_name);
+                // TODO: show item that describes problem
+                recyclerView.setAdapter(new DataAdapter(new ArrayList<JSONObject>()));
+                swipeRefreshLayout.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
+                progressBar.setVisibility(View.GONE);
             }
         }
     }
@@ -129,6 +136,17 @@ public class MainActivity extends AppCompatActivity {
                     });
                 } catch (IOException | JSONException e) {
                     Log.e(LOG_TAG, "Failed to load NearbyInfo", e);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setTitle(R.string.app_name);
+                            // TODO: show item that describes problem
+                            recyclerView.setAdapter(new DataAdapter(new ArrayList<JSONObject>()));
+                            swipeRefreshLayout.setVisibility(View.VISIBLE);
+                            swipeRefreshLayout.setRefreshing(false);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
                 }
             }
         }).start();
