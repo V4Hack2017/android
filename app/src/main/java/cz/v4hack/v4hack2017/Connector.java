@@ -2,21 +2,25 @@ package cz.v4hack.v4hack2017;
 
 import android.location.Location;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Random;
 
 public final class Connector {
+
+    private static final String URL_NEARBY_INFO = "https://api.showway.xyz/nearby";
 
     private Connector() {
     }
 
-    public static JSONObject getLocationInfo(Location location) throws IOException, JSONException {
-        return new JSONObject()
+    public static JSONObject getNearbyInfo(Location location) throws IOException, JSONException {
+        String jsonResult = Jsoup.connect(URL_NEARBY_INFO)
+                .data("lat", Double.toString(location.getLatitude()), "lng", Double.toString(location.getLongitude()))
+                .execute().body();
+        return new JSONObject(jsonResult);
+        /*return new JSONObject()
                 .put("stop", "TestStation")
                 .put("lines", new JSONObject()
                         .put("8", new JSONObject()
@@ -58,6 +62,6 @@ public final class Connector {
                                                 .singletonList(System.currentTimeMillis() + 600000)))
                                 )
                         )
-                );
+                );*/
     }
 }

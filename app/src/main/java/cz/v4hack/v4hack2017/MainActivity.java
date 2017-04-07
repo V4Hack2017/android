@@ -1,7 +1,6 @@
 package cz.v4hack.v4hack2017;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +11,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -26,6 +26,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG = "MainActivity";
+    private static final int LOCATION_PERMISSIONS_REQUEST_ID = 100;
 
     @BindView(R.id.swipeRefreshLayout)
     public SwipeRefreshLayout swipeRefreshLayout;
@@ -69,30 +72,32 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
     }
 
+    private void checkPermissions() {
+        if (!Utils.hasAllLocationPermissions(this)) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            }, LOCATION_PERMISSIONS_REQUEST_ID);
+        } else {
+            requestLocation();
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        for (int i : grantResults) {
-            if (i == PackageManager.PERMISSION_GRANTED) {
-                checkPermissions();
-                return;
+        if (requestCode == LOCATION_PERMISSIONS_REQUEST_ID) {
+            NotificationService.reload(this);
+            if (Utils.hasAnyLocationPermission(this)) {
+                requestLocation();
             }
         }
     }
 
-    private void checkPermissions() {
-        LocationManager locationManager = ((LocationManager) getSystemService(LOCATION_SERVICE));
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null);
-        } else if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null);
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
-        }
+    private void requestLocation() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        //noinspection MissingPermission // method is called only if permission is provided
+        locationManager.requestSingleUpdate(Utils.getLocationRequestCriteria(), locationListener, null);
     }
 
     private void fetchLocation() {
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 final ArrayList<JSONObject> arrayList = new ArrayList<>();
 
                 try {
-                    final JSONObject locationInfo = Connector.getLocationInfo(null);
+                    final JSONObject locationInfo = Connector.getNearbyInfo(null);
                     final String title = locationInfo.getString("stop");
                     JSONObject lines = locationInfo.getJSONObject("lines");
                     for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
@@ -123,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 } catch (IOException | JSONException e) {
-                    e.printStackTrace();
+                    Log.e(LOG_TAG, "Failed to load NearbyInfo", e);
                 }
             }
         }).start();

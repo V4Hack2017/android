@@ -1,6 +1,5 @@
 package cz.v4hack.v4hack2017;
 
-import android.Manifest;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -8,14 +7,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
@@ -93,17 +88,8 @@ public class NotificationService extends IntentService {
         }
     }
 
-    public static boolean isOnline(Context context) {
-        ConnectivityManager connMgr = (ConnectivityManager)
-                context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected();
-    }
-
     private static boolean canUpdate(Context context) {
-        return isEnabled(context) && isOnline(context)
-                && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+        return isEnabled(context) && Utils.isOnline(context) && Utils.hasAnyLocationPermission(context);
     }
 
     private static SharedPreferences getPreferences(Context context) {
@@ -152,10 +138,10 @@ public class NotificationService extends IntentService {
 
     private void handleActionLocationReceived(Location location) {
         try {
-            JSONObject locationInfo = Connector.getLocationInfo(location);
+            JSONObject locationInfo = Connector.getNearbyInfo(location);
             // TODO: 4/7/17 implement
             Notification notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.button_rect_normal)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle("Nearest connection")
                     .setContentText(locationInfo.toString())
                     //.setContent(new RemoteViews())
@@ -175,12 +161,10 @@ public class NotificationService extends IntentService {
             return;
         }
 
-        Criteria criteria = new Criteria();
-        // TODO: 4/7/17 setup criteria
-
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //noinspection MissingPermission
-        ((LocationManager) getSystemService(LOCATION_SERVICE))
-                .requestSingleUpdate(criteria, getPendingIntentActionLocationReceived(this));
+        locationManager.requestSingleUpdate(Utils.getLocationRequestCriteria(),
+                getPendingIntentActionLocationReceived(this));
     }
 
     private void handleActionEnable() {
