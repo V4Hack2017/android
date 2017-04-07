@@ -118,6 +118,9 @@ public class NotificationService extends IntentService {
         if (intent == null) return;
         final String action = intent.getAction();
         switch (action) {
+            case Intent.ACTION_BOOT_COMPLETED:
+                reload(this);
+                break;
             case ACTION_LOCATION_RECEIVED:
                 Location location = intent.getParcelableExtra(LocationManager.KEY_LOCATION_CHANGED);
                 handleActionLocationReceived(location);

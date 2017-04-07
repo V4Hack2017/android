@@ -36,7 +36,15 @@ public final class Utils {
 
     public static Criteria getLocationRequestCriteria() {
         Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+        criteria.setVerticalAccuracy(Criteria.NO_REQUIREMENT);
+        criteria.setSpeedAccuracy(Criteria.NO_REQUIREMENT);
+        criteria.setBearingAccuracy(Criteria.NO_REQUIREMENT);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setCostAllowed(false);
+        criteria.setAltitudeRequired(false);
+        criteria.setSpeedRequired(false);
+        criteria.setBearingRequired(false);
         return criteria;
     }
 }
