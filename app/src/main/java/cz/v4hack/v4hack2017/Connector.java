@@ -28,7 +28,7 @@ public final class Connector {
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
                                         .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
+                                                .singletonList(System.currentTimeMillis() + 600000)))
                                 )
                         )
                         .put("88", new JSONObject()
@@ -41,7 +41,7 @@ public final class Connector {
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
                                         .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
+                                                .singletonList(System.currentTimeMillis() + 600000)))
                                 )
                         )
                         .put("25", new JSONObject()
@@ -54,7 +54,7 @@ public final class Connector {
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
                                         .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
+                                                .singletonList(System.currentTimeMillis() + 600000)))
                                 )
                         )
                 );
