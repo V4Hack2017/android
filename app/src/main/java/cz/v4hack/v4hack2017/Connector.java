@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Random;
 
 public final class Connector {
 
@@ -28,7 +29,7 @@ public final class Connector {
                                 .put("out", new JSONObject()
                                         .put("dest", "SecondEndStation")
                                         .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis() + 600000)))
+                                                .singletonList(System.currentTimeMillis() + (600000 * new Random().nextInt(10)))))
                                 )
                         )
                         .put("88", new JSONObject()

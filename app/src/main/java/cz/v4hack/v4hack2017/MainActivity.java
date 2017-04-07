@@ -8,9 +8,12 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,39 +27,17 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
+    @BindView(R.id.swipeRefreshLayout)
+    public SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.recycler)
     public RecyclerView recyclerView;
+    @BindView(R.id.progressBar)
+    public ProgressBar progressBar;
+
     private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    final ArrayList<JSONObject> arrayList = new ArrayList<>();
-
-                    try {
-                        final JSONObject locationInfo = Connector.getLocationInfo(null);
-                        final String title = locationInfo.getString("stop");
-                        JSONObject lines = locationInfo.getJSONObject("lines");
-                        for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
-                            String lineNumber = iterator.next();
-                            JSONObject line = lines.getJSONObject(lineNumber);
-                            line.put("line", lineNumber);
-                            arrayList.add(line);
-                        }
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                setTitle(title);
-                                recyclerView.setAdapter(new DataAdapter(arrayList));
-                            }
-                        });
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
+            fetchLocation();
         }
 
         @Override
@@ -77,8 +58,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                checkPermissions();
+            }
+        });
 
         checkPermissions();
     }
@@ -107,5 +93,39 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
         }
+    }
+
+    private void fetchLocation() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final ArrayList<JSONObject> arrayList = new ArrayList<>();
+
+                try {
+                    final JSONObject locationInfo = Connector.getLocationInfo(null);
+                    final String title = locationInfo.getString("stop");
+                    JSONObject lines = locationInfo.getJSONObject("lines");
+                    for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
+                        String lineNumber = iterator.next();
+                        JSONObject line = lines.getJSONObject(lineNumber);
+                        line.put("line", lineNumber);
+                        arrayList.add(line);
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setTitle(title);
+                            recyclerView.setAdapter(new DataAdapter(arrayList));
+                            swipeRefreshLayout.setVisibility(View.VISIBLE);
+                            swipeRefreshLayout.setRefreshing(false);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }
