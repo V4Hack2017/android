@@ -24,99 +24,53 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
-    private LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    final ArrayList<JSONObject> arrayList = new ArrayList<>();
-
-                    try {
-                        final JSONObject locationInfo = Connector.getLocationInfo(null);
-                        final String title = locationInfo.getString("stop");
-                        JSONObject lines = locationInfo.getJSONObject("lines");
-                        for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
-                            String lineNumber = iterator.next();
-                            JSONObject line = lines.getJSONObject(lineNumber);
-                            line.put("line", lineNumber);
-                            arrayList.add(line);
-                        }
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                setTitle(title);
-                                recyclerView.setAdapter(new DataAdapter(arrayList));
-                            }
-                        });
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-    };
-
-    private LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    final ArrayList<JSONObject> arrayList = new ArrayList<>();
-
-                    try {
-                        final JSONObject locationInfo = Connector.getLocationInfo(null);
-                        final String title = locationInfo.getString("stop");
-                        JSONObject lines = locationInfo.getJSONObject("lines");
-                        for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
-                            String lineNumber = iterator.next();
-                            JSONObject line = lines.getJSONObject(lineNumber);
-                            line.put("line", lineNumber);
-                            arrayList.add(line);
-                        }
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                setTitle(title);
-                                recyclerView.setAdapter(new DataAdapter(arrayList));
-                            }
-                        });
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-    };
     @BindView(R.id.recycler)
     public RecyclerView recyclerView;
+    private LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final ArrayList<JSONObject> arrayList = new ArrayList<>();
+
+                    try {
+                        final JSONObject locationInfo = Connector.getLocationInfo(null);
+                        final String title = locationInfo.getString("stop");
+                        JSONObject lines = locationInfo.getJSONObject("lines");
+                        for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
+                            String lineNumber = iterator.next();
+                            JSONObject line = lines.getJSONObject(lineNumber);
+                            line.put("line", lineNumber);
+                            arrayList.add(line);
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                setTitle(title);
+                                recyclerView.setAdapter(new DataAdapter(arrayList));
+                            }
+                        });
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
