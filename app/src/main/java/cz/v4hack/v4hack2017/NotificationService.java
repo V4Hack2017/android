@@ -46,12 +46,14 @@ public class NotificationService extends IntentService {
     }
 
     private static PendingIntent getPendingIntentActionLocationReceived(Context context) {
-        return PendingIntent.getService(context, 1, new Intent(context, NotificationService.class)
-                .setAction(ACTION_LOCATION_RECEIVED), PendingIntent.FLAG_CANCEL_CURRENT);
+        return PendingIntent.getService(context, 1,
+                new Intent(context, NotificationService.class).setAction(ACTION_LOCATION_RECEIVED),
+                PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private static PendingIntent getPendingIntentActionUpdate(Context context) {
-        return PendingIntent.getService(context, 0, getIntentActionUpdate(context),
+        return PendingIntent.getService(context, 0,
+                getIntentActionUpdate(context),
                 PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
@@ -80,6 +82,8 @@ public class NotificationService extends IntentService {
         alarmManager.cancel(updateIntent);
         if (canUpdate(context)) {
             long firstTrigger = getLastRefresh(context) + UPDATE_INTERVAL;
+            if (firstTrigger < System.currentTimeMillis())
+                firstTrigger = System.currentTimeMillis();
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, firstTrigger,
                     UPDATE_INTERVAL, updateIntent);
         } else {
@@ -124,6 +128,7 @@ public class NotificationService extends IntentService {
             case ACTION_LOCATION_RECEIVED:
                 Location location = intent.getParcelableExtra(LocationManager.KEY_LOCATION_CHANGED);
                 handleActionLocationReceived(location);
+                break;
             case ACTION_UPDATE:
                 handleActionUpdate();
                 break;
