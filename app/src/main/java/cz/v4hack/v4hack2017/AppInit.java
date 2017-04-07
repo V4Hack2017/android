@@ -7,6 +7,6 @@ public class AppInit extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        NotificationService.initialize(this);
+        NotificationService.reload(this);
     }
 }

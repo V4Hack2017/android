@@ -1,14 +1,40 @@
 package cz.v4hack.v4hack2017;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.NotificationCompat;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class NotificationService extends IntentService {
+    private static final String LOG_TAG = "NotificationService";
+    private static final int NOTIFICATION_ID = 0;
+    private static final long UPDATE_INTERVAL = 1000 * 60;
+
+    private static final String PREFERENCES_NAME = "NotificationServicePreferences";
+    private static final String PREF_ENABLED_KEY = "enabled";
+    private static final String PREF_LAST_REFRESH_KEY = "lastRefresh";
+
+    private static final String ACTION_LOCATION_RECEIVED =
+            "cz.v4hack.v4hack2017.action.LOCATION_RECEIVED";
     private static final String ACTION_UPDATE =
             "cz.v4hack.v4hack2017.action.UPDATE";
     private static final String ACTION_ENABLE =
@@ -17,11 +43,21 @@ public class NotificationService extends IntentService {
             "cz.v4hack.v4hack2017.action.DISABLE";
 
     public NotificationService() {
-        super("NotificationService");
+        super(LOG_TAG);
     }
 
-    public static void initialize(Context context) {
+    public static void reload(Context context) {
         updateRefreshing(context);
+    }
+
+    private static PendingIntent getPendingIntentActionLocationReceived(Context context) {
+        return PendingIntent.getService(context, 1, new Intent(context, NotificationService.class)
+                .setAction(ACTION_LOCATION_RECEIVED), PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private static PendingIntent getPendingIntentActionUpdate(Context context) {
+        return PendingIntent.getService(context, 0, getIntentActionUpdate(context),
+                PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     public static Intent getIntentActionUpdate(Context context) {
@@ -44,17 +80,16 @@ public class NotificationService extends IntentService {
     }
 
     private static void updateRefreshing(Context context) {
-        PendingIntent updateIntent = PendingIntent.getService(context, 0,
-                getIntentActionUpdate(context), PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent updateIntent = getPendingIntentActionUpdate(context);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         alarmManager.cancel(updateIntent);
-        if (isOnline(context)) {
-            long TRIGGER_OFFSET = 1000 * 10;
-            long UPDATE_INTERVAL = 1000 * 60;
-
-            long firstTrigger = System.currentTimeMillis() + TRIGGER_OFFSET;
+        if (canUpdate(context)) {
+            long firstTrigger = getLastRefresh(context) + UPDATE_INTERVAL;
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, firstTrigger,
                     UPDATE_INTERVAL, updateIntent);
+        } else {
+            getPendingIntentActionLocationReceived(context);
+            NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID);
         }
     }
 
@@ -65,11 +100,41 @@ public class NotificationService extends IntentService {
         return networkInfo != null && networkInfo.isConnected();
     }
 
+    private static boolean canUpdate(Context context) {
+        return isEnabled(context) && isOnline(context)
+                && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    private static SharedPreferences getPreferences(Context context) {
+        return context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+    }
+
+    private static long getLastRefresh(Context context) {
+        return getPreferences(context).getLong(PREF_LAST_REFRESH_KEY, 0);
+    }
+
+    private static void updateLastRefresh(Context context) {
+        getPreferences(context).edit().putLong(PREF_LAST_REFRESH_KEY,
+                System.currentTimeMillis()).apply();
+    }
+
+    public static boolean isEnabled(Context context) {
+        return getPreferences(context).getBoolean(PREF_ENABLED_KEY, true);
+    }
+
+    private static void setEnabled(Context context, boolean enable) {
+        getPreferences(context).edit().putBoolean(PREF_ENABLED_KEY, enable).apply();
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent == null) return;
         final String action = intent.getAction();
         switch (action) {
+            case ACTION_LOCATION_RECEIVED:
+                Location location = intent.getParcelableExtra(LocationManager.KEY_LOCATION_CHANGED);
+                handleActionLocationReceived(location);
             case ACTION_UPDATE:
                 handleActionUpdate();
                 break;
@@ -85,16 +150,47 @@ public class NotificationService extends IntentService {
         }
     }
 
+    private void handleActionLocationReceived(Location location) {
+        try {
+            JSONObject locationInfo = Connector.getLocationInfo(location);
+            // TODO: 4/7/17 implement
+            Notification notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.button_rect_normal)
+                    .setContentTitle("Nearest connection")
+                    .setContentText(locationInfo.toString())
+                    //.setContent(new RemoteViews())
+                    .build();
+            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
+
+            updateLastRefresh(this);
+        } catch (IOException | JSONException e) {
+            Log.e(LOG_TAG, "Failed to refresh notification", e);
+        }
+    }
+
     private void handleActionUpdate() {
-        // TODO: 4/7/17 implement
+        if (!canUpdate(this)) {
+            updateRefreshing(this);
+            Log.w(LOG_TAG, "Started NotificationService update");
+            return;
+        }
+
+        Criteria criteria = new Criteria();
+        // TODO: 4/7/17 setup criteria
+
+        //noinspection MissingPermission
+        ((LocationManager) getSystemService(LOCATION_SERVICE))
+                .requestSingleUpdate(criteria, getPendingIntentActionLocationReceived(this));
     }
 
     private void handleActionEnable() {
-        // TODO: 4/7/17 implement
+        setEnabled(this, true);
+        updateRefreshing(this);
     }
 
     private void handleActionDisable() {
-        // TODO: 4/7/17 implement
+        setEnabled(this, false);
+        updateRefreshing(this);
     }
 
     private void handleActionConnectivityChange() {
