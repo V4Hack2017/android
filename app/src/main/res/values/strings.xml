@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ShowWay</string>
     <string name="show_details">Show details</string>
+    <string name="title_activity_line">Line details</string>
 </resources>

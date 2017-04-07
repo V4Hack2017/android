@@ -1,7 +1,6 @@
 package cz.v4hack.v4hack2017;
 
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,14 +10,9 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
 public class DataAdapter extends RecyclerView.Adapter<DataAdapter.Holder> {
-
-    private static SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
 
     private ArrayList<JSONObject> arrayList;
 
@@ -40,17 +34,17 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.Holder> {
             final String type = object.getString("type");
 
             holder.number.setText(object.getString("line"));
-            holder.name1.setText(object.getJSONObject("in").getString("dest"));
-            holder.name2.setText(object.getJSONObject("out").getString("dest"));
+            holder.name1.setText(object.getJSONObject("in").getString("destination"));
+            holder.name2.setText(object.getJSONObject("out").getString("destination"));
 
-            final long time1 = object.getJSONObject("in").getJSONArray("connections").getLong(0);
-            final long time2 = object.getJSONObject("out").getJSONArray("connections").getLong(0);
+            final String time1 = object.getJSONObject("in").getJSONArray("connections").getString(0);
+            final String time2 = object.getJSONObject("out").getJSONArray("connections").getString(0);
             final int drawable = "tram".equals(type) ? R.drawable.ic_tram_black_24dp
                             : R.drawable.ic_directions_bus_black_24dp;
             holder.time1.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
-            holder.time1.setText(format.format(new Date(time1)));
+            holder.time1.setText(time1);
             holder.time2.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
-            holder.time2.setText(format.format(new Date(time2)));
+            holder.time2.setText(time2);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -68,13 +62,21 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.Holder> {
         public TextView time1;
         public TextView time2;
 
-        public Holder(View itemView) {
+        public Holder(final View itemView) {
             super(itemView);
             number = ((TextView) itemView.findViewById(R.id.number));
             name1 = ((TextView) itemView.findViewById(R.id.name1));
             name2 = ((TextView) itemView.findViewById(R.id.name2));
             time1 = ((TextView) itemView.findViewById(R.id.time1));
             time2 = ((TextView) itemView.findViewById(R.id.time2));
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    itemView.getContext().startActivity(
+                            new Intent(itemView.getContext(), LineActivity.class));
+                }
+            });
         }
     }
 }

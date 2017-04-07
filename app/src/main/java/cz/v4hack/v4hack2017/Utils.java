@@ -36,6 +36,7 @@ public final class Utils {
 
     public static Criteria getLocationRequestCriteria() {
         Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
         return criteria;
     }
 }

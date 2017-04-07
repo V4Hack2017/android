@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            fetchLocation();
+            fetchLocation(location);
         }
 
         @Override
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -107,15 +108,15 @@ public class MainActivity extends AppCompatActivity {
         locationManager.requestSingleUpdate(Utils.getLocationRequestCriteria(), locationListener, null);
     }
 
-    private void fetchLocation() {
+    private void fetchLocation(final Location location) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 final ArrayList<JSONObject> arrayList = new ArrayList<>();
 
                 try {
-                    final JSONObject locationInfo = Connector.getNearbyInfo(null);
-                    final String title = locationInfo.getString("stop");
+                    final JSONObject locationInfo = Connector.getNearbyInfo(location);
+                    final String title = locationInfo.getString("station");
                     JSONObject lines = locationInfo.getJSONObject("lines");
                     for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
                         String lineNumber = iterator.next();
