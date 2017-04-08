@@ -182,13 +182,8 @@ public class NotificationService extends IntentService {
                 linesViews.add(lineContentView);
             }
 
-            Notification notification;
             if (linesViews.isEmpty()) {
-                notification = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(nearbyInfo.getString("station"))
-                        .setContentText("No nearby connections")
-                        .build();
+                NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
             } else {
                 RemoteViews bigContentView = new RemoteViews(getPackageName(), R.layout.notification_content_big);
                 bigContentView.removeAllViews(R.id.container);
@@ -197,7 +192,7 @@ public class NotificationService extends IntentService {
                     bigContentView.addView(R.id.container, linesViews.get(i));
                 }
 
-                notification = new NotificationCompat.Builder(this)
+                Notification notification = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_notification)
                         .setContentTitle(nearbyInfo.getString("station"))
                         .setContentText("Tap or swipe down for more info")
@@ -210,8 +205,8 @@ public class NotificationService extends IntentService {
                                         .putExtra(MainActivity.EXTRA_NEARBY_INFO, nearbyInfo.toString()),
                                 PendingIntent.FLAG_CANCEL_CURRENT))
                         .build();
+                NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
             }
-            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
 
             updateLastRefresh(this);
         } catch (IOException | JSONException e) {
