@@ -152,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
                         arrayList.add(lineData);
                     }
 
+                    Utils.sortLinesByFavorite(arrayList);
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

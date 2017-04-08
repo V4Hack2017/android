@@ -7,6 +7,7 @@ public class AppInit extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        PreferenceManager.init(getSharedPreferences("AppInit", MODE_PRIVATE));
         NotificationService.reload(this);
     }
 }

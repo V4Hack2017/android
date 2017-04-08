@@ -3,6 +3,7 @@ package cz.v4hack.v4hack2017;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,8 @@ public class LineActivity extends AppCompatActivity {
     public SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.recycler)
     public RecyclerView recyclerView;
+    @BindView(R.id.fab)
+    public FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +44,6 @@ public class LineActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         overridePendingTransition(R.anim.slide_open, R.anim.slide_hide);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // TODO: 8.4.17 implement
-            }
-        });
 
         ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar != null) {
@@ -111,6 +106,23 @@ public class LineActivity extends AppCompatActivity {
                 }).start();
             }
         });
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<String> lines = PreferenceManager.getFavoriteLines();
+                if (lines.contains(lineData.getLineNumber())) {
+                    lines.remove(lineData.getLineNumber());
+                    Snackbar.make(view, "Line was removed from favorites", 2500).show();
+                } else {
+                    lines.add(lineData.getLineNumber());
+                    Snackbar.make(view, "Line was added to favorites", 2500).show();
+                }
+                PreferenceManager.setFavoriteLines(lines);
+                refreshFab(lineData);
+            }
+        });
+        refreshFab(lineData);
     }
 
     @Override
@@ -128,5 +140,13 @@ public class LineActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         overridePendingTransition(R.anim.slide_show, R.anim.slide_close);
+    }
+
+    private void refreshFab(LineData lineData) {
+        if (PreferenceManager.getFavoriteLines().contains(lineData.getLineNumber())) {
+            fab.setImageResource(R.drawable.ic_star_white_24dp);
+        } else {
+            fab.setImageResource(R.drawable.ic_star_border_white_24dp);
+        }
     }
 }
