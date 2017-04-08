@@ -13,11 +13,15 @@ import android.net.ConnectivityManager;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class NotificationService extends IntentService {
     private static final String LOG_TAG = "NotificationService";
@@ -146,22 +150,46 @@ public class NotificationService extends IntentService {
 
     private void handleActionLocationReceived(Location location) {
         try {
-            JSONObject locationInfo = Connector.getNearbyInfo(
+            JSONObject nearbyInfo = Connector.getNearbyInfo(
                     location.getLatitude(), location.getLongitude(), 1);
+            JSONObject lines = nearbyInfo.getJSONObject("lines");
 
-            //RemoteViews smallContentView = new RemoteViews(getPackageName(), R.layout.holder_line);
-            // TODO: 4/8/17 create
+            List<RemoteViews> linesViews = new ArrayList<>();
+            for (Iterator<String> keys = lines.keys(); keys.hasNext(); ) {
+                String lineNumber = keys.next();
+                JSONObject lineInfo = lines.getJSONObject(lineNumber);
 
-            //RemoteViews bigContentView = new RemoteViews(getPackageName(), R.layout.holder_line);
-            // TODO: 4/8/17 create
+                RemoteViews lineContentView = new RemoteViews(getPackageName(),
+                        R.layout.notification_content_line);
+                lineContentView.setTextViewText(R.id.line_number, lineNumber);
+                lineContentView.setTextViewText(R.id.line_in_text, lineInfo.getJSONObject("in").getString("destination"));
+                lineContentView.setTextViewText(R.id.line_out_text, lineInfo.getJSONObject("out").getString("destination"));
+                linesViews.add(lineContentView);
+            }
 
-            Notification notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle("Nearest connections")
-                    .setContentText(locationInfo.toString())
-                    //.setContent(smallContentView)
-                    //.setCustomBigContentView(bigContentView)
-                    .build();
+            Notification notification;
+            if (linesViews.isEmpty()) {
+                notification = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setContentTitle(nearbyInfo.getString("station"))
+                        .setContentText("No nearby connections")
+                        .build();
+            } else {
+                RemoteViews bigContentView = new RemoteViews(getPackageName(), R.layout.notification_content_big);
+
+                for (int i = 0, len = Math.min(linesViews.size(), 4); i < len; i++) {
+                    bigContentView.addView(R.id.container, linesViews.get(i));
+                }
+
+                String moreInfo = "Touch for more info";
+                notification = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle(nearbyInfo.getString("station"))
+                        .setContentText(moreInfo)
+                        .setContent(linesViews.get(0))
+                        .setCustomBigContentView(bigContentView)
+                        .build();
+            }
             NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
 
             updateLastRefresh(this);
