@@ -28,8 +28,12 @@ public class LineDataAdapter extends RecyclerView.Adapter<LineDataAdapter.Holder
     @Override
     public void onBindViewHolder(final Holder holder, int position) {
         final LineData lineData = arrayList.get(position);
-        final int drawable = "tram".equals(lineData.getType()) ? R.drawable.ic_tram_black_24dp
-                : R.drawable.ic_directions_bus_black_24dp;
+        int drawable = R.drawable.ic_tram_black_24dp;
+        if ("bus".equals(lineData.getType())) {
+            drawable = R.drawable.ic_directions_bus_black_24dp;
+        } else if ("trolley".equals(lineData.getType())) {
+            drawable = R.drawable.trolley;
+        }
 
         holder.number.setText(lineData.getLineNumber());
         holder.name1.setText(lineData.getFirstDestination());
