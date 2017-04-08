@@ -150,14 +150,19 @@ public class NotificationService extends IntentService {
 
     private void handleActionLocationReceived(Location location) {
         try {
-            JSONObject nearbyInfo = Connector.getNearbyInfo(
-                    location.getLatitude(), location.getLongitude(), 1);
+            JSONObject nearbyInfo = Connector.getNearbyInfo(location, 1);
             JSONObject lines = nearbyInfo.getJSONObject("lines");
 
             List<RemoteViews> linesViews = new ArrayList<>();
             for (Iterator<String> keys = lines.keys(); keys.hasNext(); ) {
                 String lineNumber = keys.next();
                 JSONObject lineInfo = lines.getJSONObject(lineNumber);
+                int drawable = R.drawable.ic_tram_black_24dp;
+                if ("bus".equals(lineInfo.getString("type"))) {
+                    drawable = R.drawable.ic_directions_bus_black_24dp;
+                } else if ("trolley".equals(lineInfo.getString("type"))) {
+                    drawable = R.drawable.trolley;
+                }
 
                 RemoteViews lineContentView = new RemoteViews(getPackageName(),
                         R.layout.notification_content_line);
@@ -166,6 +171,8 @@ public class NotificationService extends IntentService {
                 lineContentView.setTextViewText(R.id.line_out_name, lineInfo.getJSONObject("out").getString("destination"));
                 lineContentView.setTextViewText(R.id.line_in_time, lineInfo.getJSONObject("in").getJSONArray("connections").getString(0));
                 lineContentView.setTextViewText(R.id.line_out_time, lineInfo.getJSONObject("out").getJSONArray("connections").getString(0));
+                lineContentView.setTextViewCompoundDrawables(R.id.line_in_time, drawable, 0, 0, 0);
+                lineContentView.setTextViewCompoundDrawables(R.id.line_out_time, drawable, 0, 0, 0);
                 linesViews.add(lineContentView);
             }
 
@@ -191,8 +198,9 @@ public class NotificationService extends IntentService {
                         .setCustomBigContentView(bigContentView)
                         .setOngoing(true)
                         .setCategory(NotificationCompat.CATEGORY_STATUS)
-                        .setContentIntent(PendingIntent.getActivity(this, 0,
-                                new Intent(this, MainActivity.class),
+                        .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class)
+                                        .putExtra(MainActivity.EXTRA_LOCATION, location)
+                                        .putExtra(MainActivity.EXTRA_NEARBY_INFO, nearbyInfo.toString()),
                                 PendingIntent.FLAG_CANCEL_CURRENT))
                         .build();
             }

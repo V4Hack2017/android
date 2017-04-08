@@ -1,6 +1,7 @@
 package cz.v4hack.v4hack2017;
 
 import android.Manifest;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,9 +29,10 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_LOCATION = "EXTRA_LOCATION";
+    public static final String EXTRA_NEARBY_INFO = "EXTRA_NEARBY_INFO";
     private static final String LOG_TAG = "MainActivity";
     private static final int LOCATION_PERMISSIONS_REQUEST_ID = 100;
-
     @BindView(R.id.swipeRefreshLayout)
     public SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.recycler)
@@ -71,7 +73,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        checkPermissions();
+        Intent intent = getIntent();
+        if (intent.hasExtra(EXTRA_LOCATION) && intent.hasExtra(EXTRA_NEARBY_INFO)) {
+            try {
+                applyNearbyInfoOnRecyclerView((Location) intent.getParcelableExtra(EXTRA_LOCATION),
+                        new JSONObject(intent.getStringExtra(EXTRA_NEARBY_INFO)));
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "Failed to parse NearbyInfo", e);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setTitle(R.string.app_name);
+                        // TODO: show item that describes problem
+                        recyclerView.setAdapter(new LineDataAdapter(new ArrayList<LineData>()));
+                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+                checkPermissions();
+            }
+        } else {
+            checkPermissions();
+        }
     }
 
     private void checkPermissions() {
@@ -113,57 +137,9 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ArrayList<LineData> arrayList = new ArrayList<>();
-
                 try {
-                    final JSONObject locationInfo = Connector.getNearbyInfo(
-                            location.getLatitude(), location.getLongitude(), 100);
-                    JSONObject lines = locationInfo.getJSONObject("lines");
-                    for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
-                        String lineNumber = iterator.next();
-                        JSONObject line = lines.getJSONObject(lineNumber);
-                        LineData lineData = new LineData();
-                        lineData.setLocationLat(location.getLatitude());
-                        lineData.setLocationLng(location.getLongitude());
-                        lineData.setStation(locationInfo.getString("station"));
-                        lineData.setLineNumber(lineNumber);
-                        lineData.setType(line.getString("type"));
-                        lineData.setFirstDestination(line.getJSONObject("in").optString("destination"));
-                        lineData.setSecondDestination(line.getJSONObject("out").optString("destination"));
-                        JSONArray inConnections = line.getJSONObject("in").getJSONArray("connections");
-                        JSONArray outConnections = line.getJSONObject("out").getJSONArray("connections");
-                        lineData.setFirstTime(inConnections.optString(0));
-                        lineData.setSecondTime(line.getJSONObject("out")
-                                .getJSONArray("connections").optString(0));
-                        ArrayList<LineData> list = new ArrayList<>();
-                        for (int i = 0; i < (inConnections.length() > outConnections.length()
-                                ? inConnections.length() : outConnections.length()); i++) {
-                            LineData data = new LineData();
-                            data.setStation(locationInfo.getString("station"));
-                            data.setLineNumber(lineNumber);
-                            data.setType(line.getString("type"));
-                            data.setFirstDestination(line.getJSONObject("in").optString("destination"));
-                            data.setSecondDestination(line.getJSONObject("out").optString("destination"));
-                            data.setFirstTime(inConnections.optString(i));
-                            data.setSecondTime(outConnections.optString(i));
-                            list.add(data);
-                        }
-                        lineData.setList(list);
-                        arrayList.add(lineData);
-                    }
-
-                    Utils.sortLinesByFavorite(arrayList);
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setTitle(arrayList.get(0).getStation());
-                            recyclerView.setAdapter(new LineDataAdapter(arrayList));
-                            swipeRefreshLayout.setVisibility(View.VISIBLE);
-                            swipeRefreshLayout.setRefreshing(false);
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
+                    final JSONObject nearbyInfo = Connector.getNearbyInfo(location, 100);
+                    applyNearbyInfoOnRecyclerView(location, nearbyInfo);
                 } catch (IOException | JSONException e) {
                     Log.e(LOG_TAG, "Failed to load NearbyInfo", e);
                     runOnUiThread(new Runnable() {
@@ -180,5 +156,55 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void applyNearbyInfoOnRecyclerView(Location location, JSONObject nearbyInfo) throws JSONException {
+        JSONObject lines = nearbyInfo.getJSONObject("lines");
+        final ArrayList<LineData> arrayList = new ArrayList<>();
+        for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
+            String lineNumber = iterator.next();
+            JSONObject line = lines.getJSONObject(lineNumber);
+            LineData lineData = new LineData();
+            lineData.setLocationLat(location.getLatitude());
+            lineData.setLocationLng(location.getLongitude());
+            lineData.setStation(nearbyInfo.getString("station"));
+            lineData.setLineNumber(lineNumber);
+            lineData.setType(line.getString("type"));
+            lineData.setFirstDestination(line.getJSONObject("in").optString("destination"));
+            lineData.setSecondDestination(line.getJSONObject("out").optString("destination"));
+            JSONArray inConnections = line.getJSONObject("in").getJSONArray("connections");
+            JSONArray outConnections = line.getJSONObject("out").getJSONArray("connections");
+            lineData.setFirstTime(inConnections.optString(0));
+            lineData.setSecondTime(line.getJSONObject("out")
+                    .getJSONArray("connections").optString(0));
+            ArrayList<LineData> list = new ArrayList<>();
+            for (int i = 0; i < (inConnections.length() > outConnections.length()
+                    ? inConnections.length() : outConnections.length()); i++) {
+                LineData data = new LineData();
+                data.setStation(nearbyInfo.getString("station"));
+                data.setLineNumber(lineNumber);
+                data.setType(line.getString("type"));
+                data.setFirstDestination(line.getJSONObject("in").optString("destination"));
+                data.setSecondDestination(line.getJSONObject("out").optString("destination"));
+                data.setFirstTime(inConnections.optString(i));
+                data.setSecondTime(outConnections.optString(i));
+                list.add(data);
+            }
+            lineData.setList(list);
+            arrayList.add(lineData);
+        }
+
+        Utils.sortLinesByFavorite(arrayList);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setTitle(arrayList.get(0).getStation());
+                recyclerView.setAdapter(new LineDataAdapter(arrayList));
+                swipeRefreshLayout.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
+                progressBar.setVisibility(View.GONE);
+            }
+        });
     }
 }

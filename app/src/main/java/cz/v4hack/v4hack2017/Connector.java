@@ -1,5 +1,7 @@
 package cz.v4hack.v4hack2017;
 
+import android.location.Location;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -12,6 +14,10 @@ public final class Connector {
     private static final String URL_NEARBY_INFO = "https://api.showway.xyz/nearby";
 
     private Connector() {
+    }
+
+    public static JSONObject getNearbyInfo(Location location, int limit) throws IOException, JSONException {
+        return getNearbyInfo(location.getLatitude(), location.getLongitude(), limit);
     }
 
     public static JSONObject getNearbyInfo(double lat, double lng, int limit) throws IOException, JSONException {
