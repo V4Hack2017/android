@@ -150,7 +150,7 @@ public class NotificationService extends IntentService {
 
     private void handleActionLocationReceived(Location location) {
         try {
-            JSONObject nearbyInfo = Connector.getNearbyInfo(location, 1);
+            JSONObject nearbyInfo = Connector.getNearbyInfo(location, 100);
             JSONObject lines = nearbyInfo.getJSONObject("lines");
 
             List<String> linesNumbers = new ArrayList<>();
