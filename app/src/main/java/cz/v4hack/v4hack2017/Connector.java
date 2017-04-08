@@ -19,7 +19,7 @@ public final class Connector {
         String jsonResult = Jsoup.connect(URL_NEARBY_INFO)
                 .data("lat", String.valueOf(location.getLatitude()),
                         "lng", String.valueOf(location.getLongitude()),
-                        "timestamp", String.valueOf(System.currentTimeMillis() / 1000D))
+                        "timestamp", String.valueOf((long) (System.currentTimeMillis() / 1000D)))
                 .ignoreContentType(true)
                 .execute().body();
         return new JSONObject(jsonResult);
