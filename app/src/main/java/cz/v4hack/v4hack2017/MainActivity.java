@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 setTitle(R.string.app_name);
                 // TODO: show item that describes problem
-                recyclerView.setAdapter(new DataAdapter(new ArrayList<JSONObject>()));
+                recyclerView.setAdapter(new LineDataAdapter(new ArrayList<LineData>()));
                 swipeRefreshLayout.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false);
                 progressBar.setVisibility(View.GONE);
@@ -112,24 +113,46 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ArrayList<JSONObject> arrayList = new ArrayList<>();
+                final ArrayList<LineData> arrayList = new ArrayList<>();
 
                 try {
                     final JSONObject locationInfo = Connector.getNearbyInfo(location);
-                    final String title = locationInfo.getString("station");
                     JSONObject lines = locationInfo.getJSONObject("lines");
                     for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
                         String lineNumber = iterator.next();
                         JSONObject line = lines.getJSONObject(lineNumber);
-                        line.put("line", lineNumber);
-                        arrayList.add(line);
+                        LineData lineData = new LineData();
+                        lineData.setStation(locationInfo.getString("station"));
+                        lineData.setLineNumber(lineNumber);
+                        lineData.setType(line.getString("type"));
+                        lineData.setFirstDestination(line.getJSONObject("in").optString("destination"));
+                        lineData.setSecondDestination(line.getJSONObject("out").optString("destination"));
+                        JSONArray inConnections = line.getJSONObject("in").getJSONArray("connections");
+                        JSONArray outConnections = line.getJSONObject("out").getJSONArray("connections");
+                        lineData.setFirstTime(inConnections.optString(0));
+                        lineData.setSecondTime(line.getJSONObject("out")
+                                .getJSONArray("connections").optString(0));
+                        ArrayList<LineData> list = new ArrayList<>();
+                        for (int i = 0; i < inConnections.length(); i++) {
+                            LineData data = new LineData();
+                            data.setStation(locationInfo.getString("station"));
+                            data.setLineNumber(lineNumber);
+                            data.setType(line.getString("type"));
+                            data.setFirstDestination(line.getJSONObject("in").optString("destination"));
+                            data.setSecondDestination(line.getJSONObject("out").optString("destination"));
+                            data.setFirstTime(inConnections.optString(i));
+                            data.setSecondTime(outConnections.optString(i));
+                            list.add(data);
+                        }
+                        lineData.setList(list);
+                        arrayList.add(lineData);
                     }
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            setTitle(title);
-                            recyclerView.setAdapter(new DataAdapter(arrayList));
+                            setTitle(arrayList.get(0).getStation());
+                            recyclerView.setAdapter(new LineDataAdapter(arrayList));
                             swipeRefreshLayout.setVisibility(View.VISIBLE);
                             swipeRefreshLayout.setRefreshing(false);
                             progressBar.setVisibility(View.GONE);
@@ -142,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             setTitle(R.string.app_name);
                             // TODO: show item that describes problem
-                            recyclerView.setAdapter(new DataAdapter(new ArrayList<JSONObject>()));
+                            recyclerView.setAdapter(new LineDataAdapter(new ArrayList<LineData>()));
                             swipeRefreshLayout.setVisibility(View.VISIBLE);
                             swipeRefreshLayout.setRefreshing(false);
                             progressBar.setVisibility(View.GONE);

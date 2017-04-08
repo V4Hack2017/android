@@ -61,13 +61,14 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/rightArrow"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_gravity="center"
             android:layout_marginEnd="-10dp"
             android:layout_marginRight="-10dp"
-            android:src="@drawable/ic_chevron_right_black_24dp"
-            android:layout_gravity="center"
-            android:contentDescription="@string/show_details" />
+            android:contentDescription="@string/show_details"
+            android:src="@drawable/ic_chevron_right_black_24dp" />
 
     </LinearLayout>
 
