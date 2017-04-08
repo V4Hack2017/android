@@ -162,8 +162,10 @@ public class NotificationService extends IntentService {
                 RemoteViews lineContentView = new RemoteViews(getPackageName(),
                         R.layout.notification_content_line);
                 lineContentView.setTextViewText(R.id.line_number, lineNumber);
-                lineContentView.setTextViewText(R.id.line_in_text, lineInfo.getJSONObject("in").getString("destination"));
-                lineContentView.setTextViewText(R.id.line_out_text, lineInfo.getJSONObject("out").getString("destination"));
+                lineContentView.setTextViewText(R.id.line_in_name, lineInfo.getJSONObject("in").getString("destination"));
+                lineContentView.setTextViewText(R.id.line_out_name, lineInfo.getJSONObject("out").getString("destination"));
+                lineContentView.setTextViewText(R.id.line_in_time, lineInfo.getJSONObject("in").getJSONArray("connections").getString(0));
+                lineContentView.setTextViewText(R.id.line_out_time, lineInfo.getJSONObject("out").getJSONArray("connections").getString(0));
                 linesViews.add(lineContentView);
             }
 
