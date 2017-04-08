@@ -17,7 +17,9 @@ public final class Connector {
 
     public static JSONObject getNearbyInfo(Location location) throws IOException, JSONException {
         String jsonResult = Jsoup.connect(URL_NEARBY_INFO)
-                .data("lat", Double.toString(location.getLatitude()), "lng", Double.toString(location.getLongitude()))
+                .data("lat", String.valueOf(location.getLatitude()),
+                        "lng", String.valueOf(location.getLongitude()),
+                        "timestamp", String.valueOf(System.currentTimeMillis() / 1000D))
                 .ignoreContentType(true)
                 .execute().body();
         return new JSONObject(jsonResult);

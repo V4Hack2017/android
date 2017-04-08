@@ -147,12 +147,19 @@ public class NotificationService extends IntentService {
     private void handleActionLocationReceived(Location location) {
         try {
             JSONObject locationInfo = Connector.getNearbyInfo(location);
-            // TODO: 4/7/17 implement
+
+            //RemoteViews smallContentView = new RemoteViews(getPackageName(), R.layout.holder_line);
+            // TODO: 4/8/17 create
+
+            //RemoteViews bigContentView = new RemoteViews(getPackageName(), R.layout.holder_line);
+            // TODO: 4/8/17 create
+
             Notification notification = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle("Nearest connection")
+                    .setContentTitle("Nearest connections")
                     .setContentText(locationInfo.toString())
-                    //.setContent(new RemoteViews())
+                    //.setContent(smallContentView)
+                    //.setCustomBigContentView(bigContentView)
                     .build();
             NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
 
