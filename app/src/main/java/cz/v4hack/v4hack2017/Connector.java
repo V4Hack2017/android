@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
+import java.util.TimeZone;
 
 public final class Connector {
 
@@ -16,10 +17,15 @@ public final class Connector {
     }
 
     public static JSONObject getNearbyInfo(Location location) throws IOException, JSONException {
+        long time = System.currentTimeMillis();
+        int offset = TimeZone.getDefault().getOffset(time);
+        time += offset;
+
+
         String jsonResult = Jsoup.connect(URL_NEARBY_INFO)
                 .data("lat", String.valueOf(location.getLatitude()),
                         "lng", String.valueOf(location.getLongitude()),
-                        "timestamp", String.valueOf((long) (System.currentTimeMillis() / 1000D)))
+                        "timestamp", String.valueOf(time / 1000))
                 .ignoreContentType(true)
                 .execute().body();
         return new JSONObject(jsonResult);
