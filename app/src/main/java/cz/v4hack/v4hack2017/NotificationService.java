@@ -153,9 +153,15 @@ public class NotificationService extends IntentService {
             JSONObject nearbyInfo = Connector.getNearbyInfo(location, 1);
             JSONObject lines = nearbyInfo.getJSONObject("lines");
 
-            List<RemoteViews> linesViews = new ArrayList<>();
+            List<String> linesNumbers = new ArrayList<>();
             for (Iterator<String> keys = lines.keys(); keys.hasNext(); ) {
-                String lineNumber = keys.next();
+                linesNumbers.add(keys.next());
+            }
+
+            Utils.sortLineNumbersByFavorite(linesNumbers);
+
+            List<RemoteViews> linesViews = new ArrayList<>();
+            for (String lineNumber : linesNumbers) {
                 JSONObject lineInfo = lines.getJSONObject(lineNumber);
                 int drawable = R.drawable.ic_tram_black_24dp;
                 if ("bus".equals(lineInfo.getString("type"))) {
@@ -185,6 +191,7 @@ public class NotificationService extends IntentService {
                         .build();
             } else {
                 RemoteViews bigContentView = new RemoteViews(getPackageName(), R.layout.notification_content_big);
+                bigContentView.removeAllViews(R.id.container);
 
                 for (int i = 0, len = Math.min(linesViews.size(), 4); i < len; i++) {
                     bigContentView.addView(R.id.container, linesViews.get(i));

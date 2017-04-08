@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public final class Utils {
 
@@ -52,9 +53,8 @@ public final class Utils {
         return criteria;
     }
 
-    public static void sortLinesByFavorite(ArrayList<LineData> arrayList) {
+    public static void sortLinesByFavorite(List<LineData> arrayList) {
         final ArrayList<String> favoriteLines = PreferenceManager.getFavoriteLines();
-        System.out.println(favoriteLines);
         Collections.sort(arrayList, new Comparator<LineData>() {
             @Override
             public int compare(LineData o1, LineData o2) {
@@ -64,6 +64,25 @@ public final class Utils {
                     }
                     return 0;
                 } else if (favoriteLines.contains(o2.getLineNumber())) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+    }
+
+    public static void sortLineNumbersByFavorite(List<String> arrayList) {
+        final ArrayList<String> favoriteLines = PreferenceManager.getFavoriteLines();
+        Collections.sort(arrayList, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                if (favoriteLines.contains(o1)) {
+                    if (!favoriteLines.contains(o2)) {
+                        return -1;
+                    }
+                    return 0;
+                }
+                if (favoriteLines.contains(o2)) {
                     return 1;
                 }
                 return 0;
