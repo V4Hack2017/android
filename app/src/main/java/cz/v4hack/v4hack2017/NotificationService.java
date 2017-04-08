@@ -10,8 +10,8 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -181,13 +181,17 @@ public class NotificationService extends IntentService {
                     bigContentView.addView(R.id.container, linesViews.get(i));
                 }
 
-                String moreInfo = "Touch for more info";
                 notification = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_notification)
                         .setContentTitle(nearbyInfo.getString("station"))
-                        .setContentText(moreInfo)
-                        .setContent(linesViews.get(0))
+                        .setContentText("Tap or swipe down for more info")
+                        //.setContent(linesViews.get(0))
                         .setCustomBigContentView(bigContentView)
+                        .setOngoing(true)
+                        .setCategory(NotificationCompat.CATEGORY_STATUS)
+                        .setContentIntent(PendingIntent.getActivity(this, 0,
+                                new Intent(this, MainActivity.class),
+                                PendingIntent.FLAG_CANCEL_CURRENT))
                         .build();
             }
             NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
