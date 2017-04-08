@@ -194,7 +194,7 @@ public class NotificationService extends IntentService {
                         .setSmallIcon(R.drawable.ic_notification)
                         .setContentTitle(nearbyInfo.getString("station"))
                         .setContentText("Tap or swipe down for more info")
-                        //.setContent(linesViews.get(0))
+                        .setContent(bigContentView)
                         .setCustomBigContentView(bigContentView)
                         .setOngoing(true)
                         .setCategory(NotificationCompat.CATEGORY_STATUS)
