@@ -146,7 +146,8 @@ public class NotificationService extends IntentService {
 
     private void handleActionLocationReceived(Location location) {
         try {
-            JSONObject locationInfo = Connector.getNearbyInfo(location);
+            JSONObject locationInfo = Connector.getNearbyInfo(
+                    location.getLatitude(), location.getLongitude(), 1);
 
             //RemoteViews smallContentView = new RemoteViews(getPackageName(), R.layout.holder_line);
             // TODO: 4/8/17 create

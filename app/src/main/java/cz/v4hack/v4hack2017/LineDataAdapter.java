@@ -43,6 +43,22 @@ public class LineDataAdapter extends RecyclerView.Adapter<LineDataAdapter.Holder
         holder.time2.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
         holder.time2.setText(lineData.getSecondTime());
 
+        if (lineData.getFirstTime() == null || lineData.getFirstTime().trim().length() == 0) {
+            holder.time1.setVisibility(View.GONE);
+            holder.name1.setVisibility(View.GONE);
+        } else {
+            holder.time1.setVisibility(View.VISIBLE);
+            holder.name1.setVisibility(View.VISIBLE);
+        }
+
+        if (lineData.getSecondTime() == null || lineData.getSecondTime().trim().length() == 0) {
+            holder.time2.setVisibility(View.GONE);
+            holder.name2.setVisibility(View.GONE);
+        } else {
+            holder.time2.setVisibility(View.VISIBLE);
+            holder.name2.setVisibility(View.VISIBLE);
+        }
+
         if (lineData.getList() != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

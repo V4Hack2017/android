@@ -1,7 +1,5 @@
 package cz.v4hack.v4hack2017;
 
-import android.location.Location;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -16,61 +14,18 @@ public final class Connector {
     private Connector() {
     }
 
-    public static JSONObject getNearbyInfo(Location location) throws IOException, JSONException {
+    public static JSONObject getNearbyInfo(double lat, double lng, int limit) throws IOException, JSONException {
         long time = System.currentTimeMillis();
         int offset = TimeZone.getDefault().getOffset(time);
         time += offset;
 
-
         String jsonResult = Jsoup.connect(URL_NEARBY_INFO)
-                .data("lat", String.valueOf(location.getLatitude()),
-                        "lng", String.valueOf(location.getLongitude()),
-                        "timestamp", String.valueOf(time / 1000))
+                .data("lat", String.valueOf(lat),
+                        "lng", String.valueOf(lng),
+                        "timestamp", String.valueOf(time / 1000),
+                        "limit", String.valueOf(limit))
                 .ignoreContentType(true)
                 .execute().body();
         return new JSONObject(jsonResult);
-        /*return new JSONObject()
-                .put("stop", "TestStation")
-                .put("lines", new JSONObject()
-                        .put("8", new JSONObject()
-                                .put("type", "tram")
-                                .put("in", new JSONObject()
-                                        .put("dest", "FirstEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
-                                )
-                                .put("out", new JSONObject()
-                                        .put("dest", "SecondEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis() + (600000 * new Random().nextInt(10)))))
-                                )
-                        )
-                        .put("88", new JSONObject()
-                                .put("type", "bus")
-                                .put("in", new JSONObject()
-                                        .put("dest", "FirstEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
-                                )
-                                .put("out", new JSONObject()
-                                        .put("dest", "SecondEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis() + 600000)))
-                                )
-                        )
-                        .put("25", new JSONObject()
-                                .put("type", "trolley")
-                                .put("in", new JSONObject()
-                                        .put("dest", "FirstEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis())))
-                                )
-                                .put("out", new JSONObject()
-                                        .put("dest", "SecondEndStation")
-                                        .put("connections", new JSONArray(Collections
-                                                .singletonList(System.currentTimeMillis() + 600000)))
-                                )
-                        )
-                );*/
     }
 }

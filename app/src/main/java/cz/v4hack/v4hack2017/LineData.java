@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 public class LineData implements Serializable {
 
+    private double locationLat;
+    private double locationLng;
     private ArrayList<LineData> list;
     private String station;
     private String lineNumber;
@@ -13,6 +15,22 @@ public class LineData implements Serializable {
     private String secondDestination;
     private String firstTime;
     private String secondTime;
+
+    public double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(double locationLng) {
+        this.locationLng = locationLng;
+    }
 
     public ArrayList<LineData> getList() {
         return list;

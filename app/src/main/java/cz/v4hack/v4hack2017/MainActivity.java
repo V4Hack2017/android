@@ -116,12 +116,15 @@ public class MainActivity extends AppCompatActivity {
                 final ArrayList<LineData> arrayList = new ArrayList<>();
 
                 try {
-                    final JSONObject locationInfo = Connector.getNearbyInfo(location);
+                    final JSONObject locationInfo = Connector.getNearbyInfo(
+                            location.getLatitude(), location.getLongitude(), 100);
                     JSONObject lines = locationInfo.getJSONObject("lines");
                     for (Iterator<String> iterator = lines.keys(); iterator.hasNext(); ) {
                         String lineNumber = iterator.next();
                         JSONObject line = lines.getJSONObject(lineNumber);
                         LineData lineData = new LineData();
+                        lineData.setLocationLat(location.getLatitude());
+                        lineData.setLocationLng(location.getLongitude());
                         lineData.setStation(locationInfo.getString("station"));
                         lineData.setLineNumber(lineNumber);
                         lineData.setType(line.getString("type"));
@@ -133,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
                         lineData.setSecondTime(line.getJSONObject("out")
                                 .getJSONArray("connections").optString(0));
                         ArrayList<LineData> list = new ArrayList<>();
-                        for (int i = 0; i < inConnections.length(); i++) {
+                        for (int i = 0; i < (inConnections.length() > outConnections.length()
+                                ? inConnections.length() : outConnections.length()); i++) {
                             LineData data = new LineData();
                             data.setStation(locationInfo.getString("station"));
                             data.setLineNumber(lineNumber);
